@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polar Area Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root {
+  --bg:       #0d1117;
+  --surf:     #161b22;
+  --surf2:    #1c2330;
+  --border:   #30363d;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --dim:      #5a6370;
+  --crimson:  #c44137;
+  --gold:     #d4a017;
+  --blue:     #58a6ff;
+}
+body.light {
+  --bg:       #f5f5f0;
+  --surf:     #ffffff;
+  --surf2:    #ededea;
+  --border:   #d0cfc8;
+  --text:     #1a1a1a;
+  --muted:    #666660;
+  --dim:      #999990;
+  --crimson:  #b02a20;
+  --gold:     #a07010;
+  --blue:     #2060c8;
+}
+
+/* ── THEME TOGGLE BUTTON ── */
+.theme-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 12px;
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;
+  cursor:pointer;
+  transition:all .15s;
+  flex-shrink:0;
+  letter-spacing:.03em;
+}
+.theme-btn:hover{color:var(--text);border-color:var(--blue);}
+.theme-btn svg{flex-shrink:0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'EB Garamond',Georgia,serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+header{
+  padding:10px 20px;
+  border-bottom:1px solid var(--border);
+  background:var(--surf);
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-shrink:0;
+}
+header h1{
+  font-size:1.25rem;
+  font-weight:600;
+  letter-spacing:.01em;
+  white-space:nowrap;
+}
+header .sub{
+  font-style:italic;
+  color:var(--muted);
+  font-size:.9rem;
+  white-space:nowrap;
+}
+.mode-tabs{
+  margin-left:auto;
+  display:flex;
+  background:var(--bg);
+  border-radius:6px;
+  padding:3px;
+  gap:2px;
+  flex-shrink:0;
+}
+.mode-tab{
+  padding:5px 18px;
+  border-radius:4px;
+  cursor:pointer;
+  font-family:'EB Garamond',serif;
+  font-size:.9rem;
+  color:var(--muted);
+  border:none;
+  background:transparent;
+  transition:.15s;
+}
+.mode-tab.active{background:var(--surf2);color:var(--text);}
+
+/* ── LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:272px;
+  min-width:272px;
+  border-right:1px solid var(--border);
+  background:var(--surf);
+  overflow-y:auto;
+  padding:14px 14px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.sec-title{
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--dim);
+  margin-bottom:7px;
+  font-family:'JetBrains Mono',monospace;
+}
+.preset-list{display:flex;flex-direction:column;gap:3px;}
+.preset-btn{
+  padding:7px 10px;
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:5px;
+  color:var(--text);
+  font-family:'EB Garamond',serif;
+  font-size:.88rem;
+  cursor:pointer;
+  text-align:left;
+  transition:.12s;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+}
+.preset-btn:hover{border-color:var(--blue);background:#1a2235;}
+.preset-btn.active{border-color:var(--crimson);background:rgba(196,65,55,.1);}
+.p-eq{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);}
+
+.sliders{display:flex;flex-direction:column;gap:10px;}
+.s-row{display:flex;flex-direction:column;gap:3px;}
+.s-label{display:flex;justify-content:space-between;align-items:center;font-size:.86rem;}
+.s-val{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--blue);}
+input[type=range]{width:100%;accent-color:var(--blue);cursor:pointer;height:3px;}
+
+.toggle-row{display:flex;align-items:center;gap:10px;font-size:.88rem;margin-bottom:6px;}
+.toggle{
+  width:38px;height:20px;background:var(--border);border-radius:10px;
+  cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0;
+}
+.toggle.on{background:var(--blue);}
+.toggle::after{
+  content:'';position:absolute;width:14px;height:14px;background:#fff;
+  border-radius:50%;top:3px;left:3px;transition:left .2s;
+}
+.toggle.on::after{left:21px;}
+#sector-n-row{margin-top:6px;}
+
+/* ── BOUND TEXT INPUTS ── */
+.bound-row{display:flex;flex-direction:column;gap:4px;}
+.bound-top{display:flex;align-items:center;gap:6px;}
+.bound-sym{font-size:.92rem;min-width:22px;}
+.bound-input{
+  flex:1;
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  color:var(--blue);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  padding:3px 7px;
+  outline:none;
+  transition:border-color .15s;
+}
+.bound-input:focus{border-color:var(--blue);}
+.bound-input.invalid{border-color:#e05c5c;color:#e05c5c;}
+
+/* ── CANVAS AREA ── */
+.canvas-wrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  overflow:hidden;
+  position:relative;
+}
+#polarCanvas{display:block;}
+
+/* ── FORMULA BAR ── */
+.formula-bar{
+  flex-shrink:0;
+  background:var(--surf);
+  border-top:1px solid var(--border);
+  padding:10px 20px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  min-height:58px;
+}
+.formula-eq{
+  flex:1;
+  font-size:1rem;
+  display:flex;
+  align-items:center;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+.legend{display:flex;gap:14px;flex-shrink:0;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);}
+.leg-dot{width:14px;height:3px;border-radius:2px;flex-shrink:0;}
+.area-block{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.area-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-family:'JetBrains Mono',monospace;}
+.area-val{font-family:'JetBrains Mono',monospace;font-size:1.25rem;color:var(--crimson);white-space:nowrap;}
+.sector-area{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--blue);margin-top:1px;}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar{width:5px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Polar Area Explorer</h1>
+  <span class="sub">Area in Polar Coordinates</span>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-single" onclick="setMode('single')">Single Curve</button>
+    <button class="mode-tab"        id="tab-between" onclick="setMode('between')">Between Two Curves</button>
+  </div>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">
+    <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <span id="theme-label">Light</span>
+  </button>
+</header>
+
+<div class="main">
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+
+    <div>
+      <div class="sec-title">Presets</div>
+      <div class="preset-list" id="preset-list"></div>
+    </div>
+
+    <div>
+      <div class="sec-title">Integration Bounds</div>
+      <div class="sliders">
+        <div class="bound-row">
+          <div class="bound-top">
+            <span class="bound-sym">α</span>
+            <input class="bound-input" id="alpha-input" value="0"
+              placeholder="e.g. pi/4" title="Enter angle (supports pi, π, expressions)">
+          </div>
+          <input type="range" id="alpha-sl" min="-628" max="628" value="0" step="1">
+        </div>
+        <div class="bound-row" style="margin-top:8px">
+          <div class="bound-top">
+            <span class="bound-sym">β</span>
+            <input class="bound-input" id="beta-input" value="2*pi"
+              placeholder="e.g. 2*pi" title="Enter angle (supports pi, π, expressions)">
+          </div>
+          <input type="range" id="beta-sl" min="-628" max="628" value="628" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-title">Sector Approximation</div>
+      <div class="toggle-row">
+        <button class="toggle" id="sector-tog" onclick="toggleSectors()"></button>
+        <span>Show n sectors</span>
+      </div>
+      <div id="sector-n-row" style="display:none">
+        <div class="s-row">
+          <div class="s-label">
+            <span>n =</span>
+            <span class="s-val" id="n-val">8</span>
+          </div>
+          <input type="range" id="n-sl" min="2" max="48" value="8" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-title">View</div>
+      <div class="s-row">
+        <div class="s-label">
+          <span>Zoom</span>
+          <span class="s-val" id="zoom-val">1.0×</span>
+        </div>
+        <input type="range" id="zoom-sl" min="30" max="240" value="90" step="5">
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── CANVAS ── -->
+  <div class="canvas-wrap" id="canvas-wrap">
+    <canvas id="polarCanvas"></canvas>
+    <div class="formula-bar">
+      <div class="formula-eq" id="formula-eq"></div>
+      <div class="legend" id="legend"></div>
+      <div class="area-block">
+        <div class="area-lbl">Computed Area</div>
+        <div class="area-val" id="area-val">—</div>
+        <div class="sector-area" id="sector-area" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<script>
+// ================================================================
+// PRESETS
+// ================================================================
+const PRESETS = {
+  single: [
+    {
+      name: 'Cardioid',
+      eq1tex: 'r = 1 + \\cos\\theta',
+      eq1txt: 'r = 1 + cos θ',
+      fn1: t => 1 + Math.cos(t),
+      alpha: 0, beta: 2*Math.PI, scale: 115,
+      fullAlpha: 0, fullBeta: 2*Math.PI
+    },
+    {
+      name: 'Circle',
+      eq1tex: 'r = 2',
+      eq1txt: 'r = 2',
+      fn1: t => 2,
+      alpha: 0, beta: 2*Math.PI, scale: 80,
+      fullAlpha: 0, fullBeta: 2*Math.PI
+    },
+    {
+      name: 'Four-Petal Rose  (1 petal)',
+      eq1tex: 'r = \\cos 2\\theta',
+      eq1txt: 'r = cos 2θ',
+      fn1: t => Math.cos(2*t),
+      alpha: -Math.PI/4, beta: Math.PI/4, scale: 210,
+      fullAlpha: -Math.PI/4, fullBeta: 7*Math.PI/4
+    },
+    {
+      name: 'Three-Petal Rose  (full)',
+      eq1tex: 'r = \\sin 3\\theta',
+      eq1txt: 'r = sin 3θ',
+      fn1: t => Math.sin(3*t),
+      alpha: 0, beta: Math.PI, scale: 210,
+      fullAlpha: 0, fullBeta: Math.PI
+    },
+    {
+      name: 'Limaçon  r = 1 + 2cos θ',
+      eq1tex: 'r = 1 + 2\\cos\\theta',
+      eq1txt: 'r = 1 + 2cos θ',
+      fn1: t => 1 + 2*Math.cos(t),
+      alpha: 0, beta: 2*Math.PI, scale: 90,
+      fullAlpha: 0, fullBeta: 2*Math.PI
+    },
+    {
+      name: 'Lemniscate  r² = 4cos 2θ',
+      eq1tex: 'r = 2\\sqrt{\\cos 2\\theta}',
+      eq1txt: 'r = 2√(cos 2θ)',
+      fn1: t => { const v=4*Math.cos(2*t); return v>=0?Math.sqrt(v):NaN; },
+      alpha: -Math.PI/4, beta: Math.PI/4, scale: 140,
+      fullAlpha: -Math.PI/4, fullBeta: Math.PI/4
+    },
+    {
+      name: 'Spiral  r = θ/π  [0, 2π]',
+      eq1tex: 'r = \\theta / \\pi',
+      eq1txt: 'r = θ/π',
+      fn1: t => t/Math.PI,
+      alpha: 0, beta: 2*Math.PI, scale: 80,
+      fullAlpha: 0, fullBeta: 2*Math.PI
+    }
+  ],
+  between: [
+    {
+      name: 'Cardioid outside Circle',
+      eq1tex: 'r = 1 + \\cos\\theta',
+      eq1txt: 'r = 1 + cos θ',
+      eq2tex: 'r = 1',
+      eq2txt: 'r = 1',
+      fn1: t => 1 + Math.cos(t),
+      fn2: t => 1,
+      alpha: -Math.PI/2, beta: Math.PI/2, scale: 130,
+      fullAlpha: 0, fullBeta: 2*Math.PI,
+      full2Alpha: 0, full2Beta: 2*Math.PI
+    },
+    {
+      name: 'Circle outside Limaçon loop',
+      eq1tex: 'r = 2\\cos\\theta',
+      eq1txt: 'r = 2cos θ',
+      eq2tex: 'r = 1',
+      eq2txt: 'r = 1',
+      fn1: t => 2*Math.cos(t),
+      fn2: t => 1,
+      alpha: 0, beta: Math.PI/3, scale: 160,
+      fullAlpha: -Math.PI/2, fullBeta: Math.PI/2,
+      full2Alpha: 0, full2Beta: 2*Math.PI
+    },
+    {
+      name: 'Intersection of two circles',
+      eq1tex: 'r = 2\\sin\\theta',
+      eq1txt: 'r = 2sin θ',
+      eq2tex: 'r = 2\\cos\\theta',
+      eq2txt: 'r = 2cos θ',
+      fn1: t => 2*Math.sin(t),
+      fn2: t => 2*Math.cos(t),
+      alpha: Math.PI/4, beta: Math.PI/2, scale: 110,
+      fullAlpha: 0, fullBeta: Math.PI,
+      full2Alpha: -Math.PI/2, full2Beta: Math.PI/2
+    },
+    {
+      name: 'Rose vs Rose  (petal overlap)',
+      eq1tex: 'r = \\cos 2\\theta',
+      eq1txt: 'r = cos 2θ',
+      eq2tex: 'r = \\sin 2\\theta',
+      eq2txt: 'r = sin 2θ',
+      fn1: t => Math.cos(2*t),
+      fn2: t => Math.sin(2*t),
+      alpha: Math.PI/8, beta: Math.PI/4, scale: 230,
+      fullAlpha: -Math.PI/4, fullBeta: 7*Math.PI/4,
+      full2Alpha: 0, full2Beta: 2*Math.PI
+    }
+  ]
+};
+
+// ================================================================
+// STATE
+// ================================================================
+let mode = 'single';
+let preset = null;
+let showSectors = false;
+let isLight = false;
+let S = { fn1:null, fn2:null, alpha:0, beta:2*Math.PI, scale:90, n:8 };
+
+// Canvas color palettes — mirrors CSS variables
+const DARK = {
+  bg:'#0d1117', grid1:'#1e2738', grid2:'#2d3748', axis:'#2d3748',
+  label:'#4a5568', anglabel:'#35404f', origin:'#8b949e',
+  curve1:'#c44137', curve1dim:'rgba(196,65,55,0.20)',
+  curve2:'#d4a017', curve2dim:'rgba(212,160,23,0.22)',
+  shade1:'rgba(196,65,55,0.18)', shadeBetween:'rgba(88,166,255,0.18)',
+  ray1:'rgba(196,65,55,0.7)', rayBetween:'rgba(88,166,255,0.65)',
+  sectorFill:'rgba(88,166,255,0.22)', sectorStroke:'rgba(88,166,255,0.60)',
+  sectorLine:'rgba(88,166,255,0.38)',
+  innerFill:'rgba(212,160,23,0.15)', innerStroke:'rgba(212,160,23,0.70)',
+  singleSectorFill:'rgba(88,166,255,0.18)', singleSectorStroke:'rgba(88,166,255,0.55)',
+  singleSectorLine:'rgba(88,166,255,0.35)',
+  // duplicate sectors
+  dupFill:'rgba(255,140,30,0.28)', dupStroke:'rgba(255,140,30,0.80)',
+  dupLine:'rgba(255,140,30,0.55)',
+};
+const LIGHT = {
+  bg:'#f5f5f0', grid1:'#ddddd6', grid2:'#c8c8be', axis:'#b0b0a4',
+  label:'#999990', anglabel:'#bbbbb0', origin:'#888880',
+  curve1:'#b02a20', curve1dim:'rgba(176,42,32,0.20)',
+  curve2:'#a07010', curve2dim:'rgba(160,112,16,0.22)',
+  shade1:'rgba(176,42,32,0.13)', shadeBetween:'rgba(32,96,200,0.13)',
+  ray1:'rgba(176,42,32,0.65)', rayBetween:'rgba(32,96,200,0.60)',
+  sectorFill:'rgba(32,96,200,0.16)', sectorStroke:'rgba(32,96,200,0.55)',
+  sectorLine:'rgba(32,96,200,0.35)',
+  innerFill:'rgba(160,112,16,0.14)', innerStroke:'rgba(160,112,16,0.65)',
+  singleSectorFill:'rgba(32,96,200,0.14)', singleSectorStroke:'rgba(32,96,200,0.50)',
+  singleSectorLine:'rgba(32,96,200,0.32)',
+  // duplicate sectors
+  dupFill:'rgba(220,110,10,0.22)', dupStroke:'rgba(220,110,10,0.75)',
+  dupLine:'rgba(220,110,10,0.50)',
+};
+function T(){ return isLight ? LIGHT : DARK; }
+
+function toggleTheme(){
+  isLight = !isLight;
+  document.body.classList.toggle('light', isLight);
+  document.getElementById('theme-label').textContent = isLight ? 'Dark' : 'Light';
+  // Swap icon to moon when light, sun when dark
+  const icon = document.getElementById('theme-icon');
+  if(isLight){
+    icon.innerHTML=`<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+  } else {
+    icon.innerHTML=`<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
+  draw();
+}
+
+// ================================================================
+// UTILITIES
+// ================================================================
+const PI = Math.PI;
+const ANGLE_NAMES = [
+  [0,'0'],[PI/6,'π/6'],[PI/4,'π/4'],[PI/3,'π/3'],
+  [PI/2,'π/2'],[2*PI/3,'2π/3'],[3*PI/4,'3π/4'],[5*PI/6,'5π/6'],
+  [PI,'π'],[7*PI/6,'7π/6'],[5*PI/4,'5π/4'],[4*PI/3,'4π/3'],
+  [3*PI/2,'3π/2'],[5*PI/3,'5π/3'],[7*PI/4,'7π/4'],[11*PI/6,'11π/6'],
+  [2*PI,'2π'],[-PI/6,'-π/6'],[-PI/4,'-π/4'],[-PI/3,'-π/3'],
+  [-PI/2,'-π/2'],[-3*PI/4,'-3π/4'],[-PI,'-π']
+];
+
+function fmtAngle(r){
+  for(const [v,n] of ANGLE_NAMES) if(Math.abs(r-v)<0.002) return n;
+  return r.toFixed(3);
+}
+
+function safeR(fn,t){
+  try{const r=fn(t); return (isFinite(r)&&!isNaN(r))?r:NaN;}catch{return NaN;}
+}
+
+// ================================================================
+// INTEGRATION  (Simpson's rule)
+// ================================================================
+function integrate(fn, a, b, N=2000){
+  if(N%2!==0) N++;
+  const h=(b-a)/N;
+  let sum=0;
+  for(let i=0;i<=N;i++){
+    const t=a+i*h;
+    const r=safeR(fn,t);
+    if(isNaN(r)) continue;
+    const v=r*r;
+    const c=(i===0||i===N)?1:(i%2===1)?4:2;
+    sum+=c*v;
+  }
+  return 0.5*(h/3)*sum;
+}
+
+function computeExact(){
+  if(!S.fn1) return NaN;
+  if(mode==='single'){
+    return integrate(S.fn1, S.alpha, S.beta);
+  } else {
+    const a1=integrate(S.fn1, S.alpha, S.beta);
+    const a2=integrate(S.fn2, S.alpha, S.beta);
+    return Math.abs(a1-a2);
+  }
+}
+
+function computeSectors(){
+  const {fn1, fn2, alpha, beta, n} = S;
+  const dT=(beta-alpha)/n;
+  let sum=0;
+  for(let i=0;i<n;i++){
+    const tMid=alpha+(i+0.5)*dT;
+    const r1=safeR(fn1,tMid);
+    if(isNaN(r1)) continue;
+    if(mode==='single'){
+      sum += 0.5*r1*r1*dT;
+    } else {
+      const r2=safeR(fn2,tMid);
+      if(!isNaN(r2)) sum += 0.5*Math.abs(r1*r1 - r2*r2)*dT;
+    }
+  }
+  return sum;
+}
+
+// ================================================================
+// CANVAS
+// ================================================================
+const canvas = document.getElementById('polarCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize(){
+  const wrap = document.getElementById('canvas-wrap');
+  const barH = document.querySelector('.formula-bar').offsetHeight || 58;
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight - barH;
+}
+
+function p2c(r, theta, cx, cy, sc){
+  return { x: cx + r*Math.cos(theta)*sc,
+           y: cy - r*Math.sin(theta)*sc };
+}
+
+// ---- GRID ----
+function drawGrid(cx, cy, sc){
+  const th=T();
+  const maxR = Math.sqrt(cx*cx+cy*cy)/sc + 1;
+  ctx.lineWidth=1;
+
+  // Concentric circles
+  ctx.strokeStyle=th.grid1;
+  for(let r=1; r<=Math.ceil(maxR); r++){
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*sc, 0, 2*PI);
+    ctx.stroke();
+  }
+
+  // Radial lines every 30°
+  ctx.strokeStyle=th.grid1;
+  for(let i=0;i<12;i++){
+    const a=i*PI/6;
+    const len=Math.max(cx,cy)*1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+len*Math.cos(a), cy-len*Math.sin(a));
+    ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle=th.axis; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(canvas.width,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,canvas.height); ctx.stroke();
+
+  // Axis arrows
+  ctx.fillStyle=th.axis;
+  arrow(canvas.width-8, cy, 'right', 6);
+  arrow(cx, 6, 'up', 6);
+
+  // r tick labels
+  ctx.fillStyle=th.label;
+  ctx.font='10px JetBrains Mono, monospace';
+  ctx.textAlign='center';
+  for(let r=1; r<=Math.ceil(maxR); r++){
+    const px=cx+r*sc;
+    if(px>canvas.width-12) break;
+    ctx.fillText(r, px, cy-4);
+  }
+
+  // Angle labels at rim
+  const labelR=Math.min(cx,cy)*0.85;
+  const angLbls=['0','π/6','π/3','π/2','2π/3','5π/6','π','7π/6','4π/3','3π/2','5π/3','11π/6'];
+  ctx.font='9px JetBrains Mono, monospace';
+  for(let i=0;i<12;i++){
+    const a=i*PI/6;
+    ctx.fillStyle=th.anglabel;
+    ctx.textAlign='center';
+    ctx.fillText(angLbls[i], cx+labelR*Math.cos(a), cy-labelR*Math.sin(a));
+  }
+}
+
+function arrow(x, y, dir, size){
+  ctx.beginPath();
+  if(dir==='right'){ctx.moveTo(x,y-size/2);ctx.lineTo(x+size,y);ctx.lineTo(x,y+size/2);}
+  else if(dir==='up'){ctx.moveTo(x-size/2,y);ctx.lineTo(x,y-size);ctx.lineTo(x+size/2,y);}
+  ctx.fill();
+}
+
+// ---- CURVE PATH ----
+function makeCurve(fn, a, b, cx, cy, sc, N=1000){
+  const path=new Path2D();
+  let on=false;
+  for(let i=0;i<=N;i++){
+    const t=a+(b-a)*i/N;
+    const r=safeR(fn,t);
+    if(isNaN(r)){on=false;continue;}
+    const p=p2c(r,t,cx,cy,sc);
+    if(!on){path.moveTo(p.x,p.y);on=true;}
+    else path.lineTo(p.x,p.y);
+  }
+  return path;
+}
+
+// ---- FILLED REGION (single) ----
+function makeRegion(fn, a, b, cx, cy, sc, N=1000){
+  const path=new Path2D();
+  path.moveTo(cx,cy);
+  for(let i=0;i<=N;i++){
+    const t=a+(b-a)*i/N;
+    const r=safeR(fn,t);
+    if(isNaN(r)) continue;
+    const p=p2c(r,t,cx,cy,sc);
+    path.lineTo(p.x,p.y);
+  }
+  path.closePath();
+  return path;
+}
+
+// ---- FILLED REGION (between) — always outer=max, inner=min ----
+function makeBetween(fn1, fn2, a, b, cx, cy, sc, N=1000){
+  const path=new Path2D();
+  let on=false;
+  // Forward: outer envelope
+  for(let i=0;i<=N;i++){
+    const t=a+(b-a)*i/N;
+    const r1=safeR(fn1,t), r2=safeR(fn2,t);
+    const r=(!isNaN(r1)&&!isNaN(r2))?Math.max(r1,r2):(!isNaN(r1))?r1:(!isNaN(r2))?r2:NaN;
+    if(isNaN(r)){on=false;continue;}
+    const p=p2c(r,t,cx,cy,sc);
+    if(!on){path.moveTo(p.x,p.y);on=true;}
+    else path.lineTo(p.x,p.y);
+  }
+  // Return: inner envelope
+  for(let i=N;i>=0;i--){
+    const t=a+(b-a)*i/N;
+    const r1=safeR(fn1,t), r2=safeR(fn2,t);
+    const r=(!isNaN(r1)&&!isNaN(r2))?Math.min(r1,r2):0;
+    const p=p2c(r,t,cx,cy,sc);
+    path.lineTo(p.x,p.y);
+  }
+  path.closePath();
+  return path;
+}
+
+// ---- DASHED BOUND RAYS ----
+function drawRay(fn, angle, cx, cy, sc, color){
+  const r=safeR(fn,angle);
+  if(isNaN(r)||r<0) return;
+  const p=p2c(r,angle,cx,cy,sc);
+  ctx.save();
+  ctx.setLineDash([5,4]);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=1.3;
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// ---- SECTORS (single curve) ----
+function drawSectors(fn, a, b, n, cx, cy, sc){
+  const dT=(b-a)/n;
+  const th=T();
+  for(let i=0;i<n;i++){
+    const tMid=a+(i+0.5)*dT;
+    const tS=a+i*dT;
+    const tE=a+(i+1)*dT;
+    const r=safeR(fn,tMid);
+    if(isNaN(r)||r===0) continue;
+    const R=Math.abs(r)*sc;
+
+    // When r < 0 the sector sits in the OPPOSITE direction (shift arc by π)
+    const offset = r < 0 ? PI : 0;
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx, cy, R, -(tS+offset), -(tE+offset), true);
+    ctx.closePath();
+    ctx.fillStyle=th.singleSectorFill;
+    ctx.fill();
+    ctx.strokeStyle=th.singleSectorStroke;
+    ctx.lineWidth=0.9;
+    ctx.stroke();
+
+    // Radius line to actual Cartesian midpoint (p2c handles negative r naturally)
+    const pm=p2c(r, tMid, cx, cy, sc);
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(pm.x,pm.y);
+    ctx.strokeStyle=th.singleSectorLine;
+    ctx.lineWidth=0.7;
+    ctx.stroke();
+  }
+}
+
+// ---- ANNULAR SECTORS (between two curves) ----
+function drawSectorsBetween(fn1, fn2, a, b, n, cx, cy, sc){
+  const dT=(b-a)/n;
+  for(let i=0;i<n;i++){
+    const tMid=a+(i+0.5)*dT;
+    const tS=a+i*dT;
+    const tE=a+(i+1)*dT;
+    const r1=safeR(fn1,tMid);
+    const r2=safeR(fn2,tMid);
+    if(isNaN(r1)||isNaN(r2)) continue;
+
+    // Always use geometric outer/inner — matches problem phrasing regardless of bounds
+    const rOuter=Math.max(r1,r2), rInner=Math.min(r1,r2);
+    const RO=rOuter*sc, RI=Math.max(0,rInner*sc);
+    if(RO<=0) continue;
+
+    // ── Inner cone (part being subtracted) — gold ──
+    if(RI>0){
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx, cy, RI, -tS, -tE, true);
+      ctx.closePath();
+      ctx.fillStyle=T().innerFill;
+      ctx.fill();
+      ctx.save();
+      ctx.setLineDash([3,3]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, RI, -tS, -tE, true);
+      ctx.strokeStyle=T().innerStroke;
+      ctx.lineWidth=1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Annular wedge (what's kept) — blue ──
+    ctx.beginPath();
+    ctx.arc(cx, cy, RO, -tS, -tE, true);
+    ctx.arc(cx, cy, RI, -tE, -tS, false);
+    ctx.closePath();
+    ctx.fillStyle=T().sectorFill;
+    ctx.fill();
+    ctx.strokeStyle=T().sectorStroke;
+    ctx.lineWidth=0.9;
+    ctx.stroke();
+
+    // Radial line at midpoint spanning inner→outer
+    const po=p2c(rOuter,tMid,cx,cy,sc);
+    const pi2=p2c(rInner,tMid,cx,cy,sc);
+    ctx.beginPath();
+    ctx.moveTo(po.x,po.y);
+    ctx.lineTo(pi2.x,pi2.y);
+    ctx.strokeStyle=T().sectorLine;
+    ctx.lineWidth=0.7;
+    ctx.stroke();
+  }
+}
+
+// ---- MASTER DRAW ----
+function draw(){
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2;
+  const {fn1, fn2, alpha, beta, scale:sc, n} = S;
+  const th=T();
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=th.bg;
+  ctx.fillRect(0,0,W,H);
+
+  drawGrid(cx,cy,sc);
+
+  if(!fn1) return;
+
+  if(mode==='single'){
+    const reg=makeRegion(fn1, alpha, beta, cx,cy,sc);
+    ctx.fillStyle=th.shade1;
+    ctx.fill(reg);
+
+    if(showSectors) drawSectors(fn1, alpha, beta, n, cx,cy,sc);
+
+    const fp=makeCurve(fn1, preset.fullAlpha, preset.fullBeta, cx,cy,sc);
+    ctx.strokeStyle=th.curve1dim;
+    ctx.lineWidth=1.2;
+    ctx.stroke(fp);
+
+    const cp=makeCurve(fn1, alpha, beta, cx,cy,sc);
+    ctx.strokeStyle=th.curve1;
+    ctx.lineWidth=2.5;
+    ctx.stroke(cp);
+
+    drawRay(fn1, alpha, cx,cy,sc,th.ray1);
+    drawRay(fn1, beta,  cx,cy,sc,th.ray1);
+
+  } else {
+    const fp1=makeCurve(fn1, preset.fullAlpha, preset.fullBeta, cx,cy,sc);
+    ctx.strokeStyle=th.curve1dim;
+    ctx.lineWidth=1.1;
+    ctx.stroke(fp1);
+
+    const fp2=makeCurve(fn2, preset.full2Alpha, preset.full2Beta, cx,cy,sc);
+    ctx.strokeStyle=th.curve2dim;
+    ctx.lineWidth=1.1;
+    ctx.stroke(fp2);
+
+    const bp=makeBetween(fn1, fn2, alpha, beta, cx,cy,sc);
+    ctx.fillStyle=th.shadeBetween;
+    ctx.fill(bp);
+
+    if(showSectors) drawSectorsBetween(fn1, fn2, alpha, beta, n, cx,cy,sc);
+
+    const cp1=makeCurve(fn1, alpha, beta, cx,cy,sc);
+    ctx.strokeStyle=th.curve1;
+    ctx.lineWidth=2.5;
+    ctx.stroke(cp1);
+
+    const cp2=makeCurve(fn2, alpha, beta, cx,cy,sc);
+    ctx.strokeStyle=th.curve2;
+    ctx.lineWidth=2.5;
+    ctx.stroke(cp2);
+
+    drawRay(fn1, alpha, cx,cy,sc,th.rayBetween);
+    drawRay(fn1, beta,  cx,cy,sc,th.rayBetween);
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx,cy,4,0,2*PI);
+  ctx.fillStyle=th.origin;
+  ctx.fill();
+}
+
+// ================================================================
+// FORMULA & AREA UPDATE
+// ================================================================
+function updateFormula(){
+  if(!preset) return;
+  const a=fmtAngle(S.alpha), b=fmtAngle(S.beta);
+  let lat;
+  if(mode==='single'){
+    lat=`A = \\dfrac{1}{2}\\int_{${a}}^{${b}} \\bigl[f(\\theta)\\bigr]^{2}\\,d\\theta`;
+  } else {
+    lat=`A = \\dfrac{1}{2}\\int_{${a}}^{${b}} \\!\\Bigl(\\bigl[f(\\theta)\\bigr]^{2} - \\bigl[g(\\theta)\\bigr]^{2}\\Bigr)d\\theta`;
+  }
+  const el=document.getElementById('formula-eq');
+  el.innerHTML='';
+  try{ katex.render(lat, el, {throwOnError:false, displayMode:false}); }
+  catch(e){ el.textContent=`A = (1/2) ∫[${a} to ${b}] ...`; }
+
+  const area=computeExact();
+  document.getElementById('area-val').textContent = isFinite(area)?area.toFixed(5):'—';
+
+  if(showSectors){
+    const sArea=computeSectors();
+    const el2=document.getElementById('sector-area');
+    el2.style.display='block';
+    el2.textContent=`n=${S.n} sectors: ${sArea.toFixed(5)}`;
+  } else {
+    document.getElementById('sector-area').style.display='none';
+  }
+}
+
+function updateLegend(){
+  if(!preset) return;
+  const el=document.getElementById('legend');
+  if(mode==='single'){
+    el.innerHTML=`<div class="leg-item">
+      <div class="leg-dot" style="background:${isLight?'#b02a20':'#c44137'}"></div>
+      <span>${preset.eq1txt}</span></div>`;
+  } else {
+    el.innerHTML=`
+      <div class="leg-item">
+        <div class="leg-dot" style="background:${isLight?'#b02a20':'#c44137'}"></div>
+        <span>${preset.eq1txt}</span>
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:${isLight?'#a07010':'#d4a017'}"></div>
+        <span>${preset.eq2txt}</span>
+      </div>`;
+  }
+}
+
+// ================================================================
+// SLIDER EVENTS
+// ================================================================
+// ================================================================
+// ANGLE EXPRESSION PARSER
+// ================================================================
+function parseAngle(str){
+  // Normalize: π → Math.PI, pi → Math.PI, allow basic math
+  const s = str.trim()
+    .replace(/π/g,'Math.PI')
+    .replace(/\bpi\b/gi,'Math.PI')
+    .replace(/[^0-9+\-*/().MathPI\s]/g,''); // strip anything unsafe
+  try{
+    // eslint-disable-next-line no-new-func
+    const v = Function('"use strict";return('+s+')')();
+    return (isFinite(v) && !isNaN(v)) ? v : null;
+  }catch(e){ return null; }
+}
+
+function setBound(which, val){
+  if(which==='alpha'){
+    S.alpha = Math.min(val, S.beta);   // can't exceed beta
+  } else {
+    S.beta  = Math.max(val, S.alpha);  // can't go below alpha
+  }
+  syncBoundUI('alpha', S.alpha);
+  syncBoundUI('beta',  S.beta);
+  updateFormula(); draw();
+}
+
+function syncBoundUI(which, val){
+  const inp = document.getElementById(which+'-input');
+  const sl  = document.getElementById(which+'-sl');
+  inp.value = fmtAngle(val);
+  inp.classList.remove('invalid');
+  sl.value  = Math.round(val*100);
+  // Keep slider limits in sync so the thumb can't cross
+  if(which==='alpha') sl.max  = Math.round(S.beta*100);
+  else                sl.min  = Math.round(S.alpha*100);
+}
+
+// ── TEXT INPUT EVENTS ──
+['alpha','beta'].forEach(which=>{
+  const inp = document.getElementById(which+'-input');
+
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ inp.blur(); }
+  });
+
+  inp.addEventListener('blur', ()=>{
+    const v = parseAngle(inp.value);
+    if(v===null){ inp.classList.add('invalid'); return; }
+    setBound(which, v);
+  });
+
+  inp.addEventListener('input', ()=>{
+    inp.classList.remove('invalid');
+  });
+});
+
+// ── SLIDER EVENTS ──
+document.getElementById('alpha-sl').addEventListener('input',function(){
+  const v = Math.min(this.value/100, S.beta);
+  S.alpha = v;
+  syncBoundUI('alpha', v);
+  updateFormula(); draw();
+});
+document.getElementById('beta-sl').addEventListener('input',function(){
+  const v = Math.max(this.value/100, S.alpha);
+  S.beta = v;
+  syncBoundUI('beta', v);
+  updateFormula(); draw();
+});
+document.getElementById('n-sl').addEventListener('input',function(){
+  S.n=parseInt(this.value);
+  document.getElementById('n-val').textContent=S.n;
+  updateFormula(); draw();
+});
+document.getElementById('zoom-sl').addEventListener('input',function(){
+  S.scale=parseInt(this.value);
+  document.getElementById('zoom-val').textContent=(S.scale/90).toFixed(1)+'×';
+  draw();
+});
+
+// ================================================================
+// MODE & PRESET LOGIC
+// ================================================================
+function setMode(m){
+  mode=m;
+  document.getElementById('tab-single').classList.toggle('active',m==='single');
+  document.getElementById('tab-between').classList.toggle('active',m==='between');
+  buildPresets();
+  loadPreset(0);
+}
+
+function buildPresets(){
+  const list=document.getElementById('preset-list');
+  list.innerHTML='';
+  PRESETS[mode].forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='preset-btn'+(i===0?' active':'');
+    const eq2=p.eq2txt?` / ${p.eq2txt}`:'';
+    btn.innerHTML=`<div>${p.name}</div><div class="p-eq">${p.eq1txt}${eq2}</div>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      loadPreset(i);
+    };
+    list.appendChild(btn);
+  });
+}
+
+function loadPreset(i){
+  preset=PRESETS[mode][i];
+  S.fn1=preset.fn1;
+  S.fn2=preset.fn2||null;
+  S.alpha=preset.alpha;
+  S.beta=preset.beta;
+  S.scale=preset.scale||90;
+
+  // Sync sliders + text inputs
+  syncBoundUI('alpha', S.alpha);
+  syncBoundUI('beta',  S.beta);
+  document.getElementById('zoom-sl').value=S.scale;
+  document.getElementById('zoom-val').textContent=(S.scale/90).toFixed(1)+'×';
+
+  updateLegend();
+  updateFormula();
+  draw();
+}
+
+function toggleSectors(){
+  showSectors=!showSectors;
+  document.getElementById('sector-tog').classList.toggle('on',showSectors);
+  document.getElementById('sector-n-row').style.display=showSectors?'block':'none';
+  updateFormula(); draw();
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init(){
+  resize();
+  buildPresets();
+  loadPreset(0);
+  window.addEventListener('resize',()=>{ resize(); draw(); });
+}
+init();
+</script>
+</body>
+</html>
